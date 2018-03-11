@@ -4,10 +4,12 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
+import jest.jon.util.IO;
 import org.glassfish.grizzly.http.server.HttpServer;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
@@ -34,7 +36,7 @@ public class MyResourceTest {
 
     @After
     public void tearDown() throws Exception {
-        server.stop();
+        server.shutdownNow();
     }
 
     /**
@@ -44,5 +46,14 @@ public class MyResourceTest {
     public void testGetIt() {
         String responseMsg = target.path("myresource").request().get(String.class);
         assertEquals("Got it!", responseMsg);
+    }
+    
+    @Test
+    public void testApiCall() {
+        String responseMsg = target.path("myresource").path("test").request().get(String.class);
+        String expected = IO.streamLines("src/test/resources/jsonTest")
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Can't read expected json file."));
+        assertEquals(expected, responseMsg); 
     }
 }

@@ -1,5 +1,7 @@
 package jest.jon;
 
+import jest.jon.util.IO;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -13,14 +15,6 @@ import javax.ws.rs.core.MediaType;
 @Path("myresource")
 public class MyResource {
     private static Client client = ClientBuilder.newClient();
-
-
-    /**
-     * Method handling HTTP GET requests. The returned object will be sent
-     * to the client as "text/plain" media type.
-     *
-     * @return String that will be returned as a text/plain response.
-     */
     
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -28,9 +22,17 @@ public class MyResource {
         return "Got it!";
     }
 
+    
     @GET
+    @Path("test")
     @Produces(MediaType.APPLICATION_JSON)
     public String test() {
-        return client.target();
+        String key = IO.streamLines("src/test/resources/api-key.txt")
+                       .findFirst()
+                       .orElseThrow(() -> new RuntimeException("Can't read api key."));
+        return client.target("https://api.yelp.com/v3/businesses/gary-danko-san-francisco")
+                .request(MediaType.APPLICATION_JSON)
+                .header("authorization","Bearer " + key)
+                .get(String.class);
     }
 }
